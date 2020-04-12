@@ -1,13 +1,22 @@
 package me.gramman75.form;
 
+import me.gramman75.common.SecurityLog;
+import me.gramman75.controller.SampleService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.security.Principal;
+import java.util.concurrent.Callable;
 
 @Controller
 public class SampleController {
+
+    @Autowired
+    SampleService sampleService;
 
     @GetMapping("/")
     public String index(Model model, Principal principal) {
@@ -29,7 +38,7 @@ public class SampleController {
     @GetMapping("/dashboard")
     public String dashboard(Model model, Principal principal) {
         model.addAttribute("message", "Hello, " + principal.getName());
-
+        sampleService.dashboard();
         return"dashboard";
     }
 
@@ -39,5 +48,51 @@ public class SampleController {
 
         return "admin";
     }
+
+
+    @GetMapping("/user")
+    public String user(Model model) {
+        model.addAttribute("message", "Hello, User");
+
+        return "user";
+    }
+
+
+    /**
+     * WebAsyncManagerIntegrationFilter
+     * 비동기 처리시 새로운 Thread에서도 동일한 principal이 적용될 수 있도록 함.
+     * 아래 예제어서는 main thread와 비동기 thread에서 동일한 principal이 사용되는 예제.
+     * @return
+     */
+    @GetMapping("/async-handler")
+    @ResponseBody
+    public Callable<String> async() {
+        SecurityLog.log("MVC");
+        return new Callable<String>() {
+            @Override
+            public String call() throws Exception {
+                SecurityLog.log("Callable");
+                return "Callable";
+            }
+        };
+    }
+
+    /**
+     * @Async annotation 사용시에는 SecuContextHolder전략을 MODE_INHERITABLETHREADLOCAL 울 세팅해야함.
+     * Spring 에서 Async사용을 위해서는 @EnableAsync annotaion을 사용해야 함.
+     * @return
+     */
+    @GetMapping("/async-service")
+    @ResponseBody
+    private String asyncService() {
+        SecurityLog.log("Before MVC");
+        String s = sampleService.asyncService();
+        SecurityLog.log("After MVC");
+
+        return s;
+
+    }
+
+
 }
 
