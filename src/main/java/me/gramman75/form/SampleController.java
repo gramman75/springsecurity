@@ -1,5 +1,7 @@
 package me.gramman75.form;
 
+import me.gramman75.account.Account;
+import me.gramman75.account.AccountService;
 import me.gramman75.common.SecurityLog;
 import me.gramman75.controller.SampleService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,6 +9,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.security.Principal;
@@ -17,6 +21,10 @@ public class SampleController {
 
     @Autowired
     SampleService sampleService;
+
+    @Autowired
+    AccountService accountService;
+
 
     @GetMapping("/")
     public String index(Model model, Principal principal) {
@@ -91,6 +99,21 @@ public class SampleController {
 
         return s;
 
+    }
+
+    @GetMapping("/account")
+    public String account(Model model) {
+        Account account = new Account();
+
+        model.addAttribute("account", account);
+
+        return "signup";
+    }
+
+    @PostMapping("/signup")
+    public String signup(@ModelAttribute Account account) {
+        accountService.createUser(account);
+        return "redirect:/";
     }
 
 

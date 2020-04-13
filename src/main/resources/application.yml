@@ -4,3 +4,14 @@ spring:
       name: admin
       password: 123
       roles: ADMIN
+
+
+  jpa:
+    hibernate:
+      open-in-view: false
+      ddl-auto: create
+    properties:
+      hibernate:
+        default_batch_fetch_size: 1000
+        show_sql: true
+        format_sql: true
