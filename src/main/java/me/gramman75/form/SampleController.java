@@ -1,5 +1,6 @@
 package me.gramman75.form;
 
+import jdk.nashorn.internal.objects.annotations.Getter;
 import me.gramman75.account.Account;
 import me.gramman75.account.AccountService;
 import me.gramman75.common.SecurityLog;
@@ -115,6 +116,24 @@ public class SampleController {
         accountService.createUser(account);
         return "redirect:/";
     }
+
+    @GetMapping("/login")
+    public String login() {
+        return "login";
+    }
+
+    @GetMapping("/logout")
+    public String logout() {
+        return "logout";
+    }
+
+    @GetMapping("/security")
+    public String security(Principal principal, Model model) {
+        String name = principal.getName();
+        model.addAttribute("username", name);
+        return "security";
+    }
+
 
 
 }

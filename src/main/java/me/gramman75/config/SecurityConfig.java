@@ -35,6 +35,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     LoginSuccessHandler loginSuccessHandler;
 
+    @Autowired
+    AccountService accountService;
+
     public SecurityExpressionHandler expressionHandler() {
         RoleHierarchyImpl roleHierarchy = new RoleHierarchyImpl();
         roleHierarchy.setHierarchy("ROLE_ADMIN > ROLE_USER");
@@ -55,13 +58,26 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 //                .csrf().disable()
                 .authorizeRequests()
                 .mvcMatchers("/", "/info", "/account/**", "/signup").permitAll()
+                .mvcMatchers("/security").fullyAuthenticated()
                 .mvcMatchers("/admin").hasRole("ADMIN")
                 .mvcMatchers("/user").hasRole("USER")
                 .anyRequest().authenticated()
                 .expressionHandler(expressionHandler());
+
         http.formLogin()
+                .loginPage("/login").permitAll()
+                .loginProcessingUrl("/login")
                 .successHandler(loginSuccessHandler)
-                .defaultSuccessUrl("/");
+//                .defaultSuccessUrl("/")
+            ;
+        http.logout()
+                .logoutUrl("/logout")
+                .logoutSuccessUrl("/");
+
+        http.rememberMe()
+                .userDetailsService(accountService);
+
+        http.exceptionHandling().accessDeniedPage("/access-denied");
 
 //            .successHandler(new AuthenticationSuccessHandler() {
 //                @Autowired
