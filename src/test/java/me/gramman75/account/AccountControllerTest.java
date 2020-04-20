@@ -1,15 +1,22 @@
 package me.gramman75.account;
 
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.authentication.TestingAuthenticationProvider;
+import org.springframework.security.authentication.TestingAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
 import javax.swing.*;
 
+import static org.assertj.core.api.Assertions.*;
 import static org.hamcrest.Matchers.containsString;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestBuilders.formLogin;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -67,11 +74,11 @@ public class AccountControllerTest {
     @Test
     public void login() throws Exception{
         Account account = new Account();
-        account.setUsername("gramman75");
+        account.setUsername("gramman");
         account.setPassword("123");
         account.setRole("USER");
         accountService.createUser(account);
-        mockMvc.perform(formLogin().user("gramman75").password("123"))
+        mockMvc.perform(formLogin().user("gramman").password("123"))
         .andExpect(authenticated());
     }
 
@@ -91,6 +98,25 @@ public class AccountControllerTest {
                 .andExpect(status().is3xxRedirection());
 
     }
+
+    @Test
+    public void simpleAuthentication() {
+        this.setSimpleAuthentication();
+
+        SecurityContext context = SecurityContextHolder.getContext();
+        Authentication authentication = context.getAuthentication();
+
+        assertThat(authentication.getName()).isEqualTo("gramman75");
+
+    }
+    private void setSimpleAuthentication() {
+        SecurityContext context = SecurityContextHolder.getContext();
+        TestingAuthenticationToken authentication = new TestingAuthenticationToken("gramman75", "123", "ADMIN");
+        context.setAuthentication(authentication);
+        SecurityContextHolder.setContext(context);
+    }
+
+
 
 
 
