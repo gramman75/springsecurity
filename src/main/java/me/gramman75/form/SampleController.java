@@ -1,11 +1,12 @@
 package me.gramman75.form;
 
-import jdk.nashorn.internal.objects.annotations.Getter;
 import me.gramman75.account.Account;
 import me.gramman75.account.AccountService;
+import me.gramman75.account.AccountUser;
 import me.gramman75.common.SecurityLog;
 import me.gramman75.controller.SampleService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -28,11 +29,11 @@ public class SampleController {
 
 
     @GetMapping("/")
-    public String index(Model model, Principal principal) {
+    public String index(Model model, @AuthenticationPrincipal AccountUser principal) {
         if (principal == null) {
             model.addAttribute("message", "Hello Spring Security");
         } else {
-            model.addAttribute("message", "Hello, " + principal.getName());
+            model.addAttribute("message", "Hello, " + principal.getAccount().getUsername());
         }
         return "index";
     }
@@ -117,9 +118,9 @@ public class SampleController {
         return "redirect:/";
     }
 
-    @GetMapping("/login")
-    public String login() {
-        return "login";
+    @GetMapping("/signin")
+    public String signin() {
+        return "signin";
     }
 
     @GetMapping("/logout")
@@ -127,10 +128,14 @@ public class SampleController {
         return "logout";
     }
 
+    @GetMapping("/access-denied")
+    public String accessDenied(Principal principal, Model model){
+        model.addAttribute("username", principal.getName());
+        return "accessDenied";
+    }
+
     @GetMapping("/security")
-    public String security(Principal principal, Model model) {
-        String name = principal.getName();
-        model.addAttribute("username", name);
+    public String security(){
         return "security";
     }
 

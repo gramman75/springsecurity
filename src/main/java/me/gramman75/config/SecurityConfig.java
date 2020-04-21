@@ -6,9 +6,11 @@ import me.gramman75.account.AccountService;
 import me.gramman75.account.LoginSuccessHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
+import org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.expression.SecurityExpressionHandler;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -16,8 +18,11 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.annotation.web.configurers.RememberMeConfigurer;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.access.expression.DefaultWebSecurityExpressionHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.util.PathMatcher;
@@ -27,7 +32,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-@Configuration
 @EnableWebSecurity
 //@Order(Ordered.HIGHEST_PRECEDENCE)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
@@ -37,6 +41,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
     AccountService accountService;
+
 
     public SecurityExpressionHandler expressionHandler() {
         RoleHierarchyImpl roleHierarchy = new RoleHierarchyImpl();
@@ -55,29 +60,28 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
-//                .csrf().disable()
+                .csrf().disable()
                 .authorizeRequests()
                 .mvcMatchers("/", "/info", "/account/**", "/signup").permitAll()
-                .mvcMatchers("/security").fullyAuthenticated()
                 .mvcMatchers("/admin").hasRole("ADMIN")
                 .mvcMatchers("/user").hasRole("USER")
+                .mvcMatchers("/security").fullyAuthenticated()
                 .anyRequest().authenticated()
                 .expressionHandler(expressionHandler());
 
+        http.formLogin(form -> 
+            form.loginPage("/signin")
+            .permitAll()
+        );
+
+
         http.formLogin()
-                .loginPage("/login").permitAll()
+                .loginPage("/signin")
                 .loginProcessingUrl("/login")
+                .usernameParameter("name")
+                .passwordParameter("pw")
                 .successHandler(loginSuccessHandler)
-//                .defaultSuccessUrl("/")
-            ;
-        http.logout()
-                .logoutUrl("/logout")
-                .logoutSuccessUrl("/");
-
-        http.rememberMe()
-                .userDetailsService(accountService);
-
-        http.exceptionHandling().accessDeniedPage("/access-denied");
+                .permitAll();
 
 //            .successHandler(new AuthenticationSuccessHandler() {
 //                @Autowired
@@ -92,6 +96,27 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 //            });
 //                .defaultSuccessUrl("/");
         http.httpBasic();
+        http.logout()
+            .logoutUrl("/logout")
+            .logoutSuccessUrl("/");
+
+
+        http.rememberMe().userDetailsService(accountService);
+
+
+        http.exceptionHandling()
+//                .accessDeniedPage("/access-denied")
+                .accessDeniedHandler(new AccessDeniedHandler() {
+                    @Override
+                    public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException) throws IOException, ServletException {
+                        Object principal1 = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+                        UserDetails principal = (UserDetails) principal1;
+                        System.out.println("principal = " + principal);
+                        response.sendRedirect("/access-denied");
+                    }
+                });
+
+
 
         SecurityContextHolder.setStrategyName(SecurityContextHolder.MODE_INHERITABLETHREADLOCAL);
     }
