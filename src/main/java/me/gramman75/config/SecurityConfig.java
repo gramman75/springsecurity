@@ -22,6 +22,8 @@ import org.springframework.security.config.annotation.web.configurers.RememberMe
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.access.expression.DefaultWebSecurityExpressionHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -44,26 +46,29 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     AccountService accountService;
 
+    @Autowired
+    UserDetailsService users;
+
     public SecurityExpressionHandler expressionHandler() {
-        RoleHierarchyImpl roleHierarchy = new RoleHierarchyImpl();
+        final RoleHierarchyImpl roleHierarchy = new RoleHierarchyImpl();
         roleHierarchy.setHierarchy("ROLE_ADMIN > ROLE_USER");
-        DefaultWebSecurityExpressionHandler handler = new DefaultWebSecurityExpressionHandler();
+        final DefaultWebSecurityExpressionHandler handler = new DefaultWebSecurityExpressionHandler();
         handler.setRoleHierarchy(roleHierarchy);
         return handler;
     }
 
     //
     @Override
-    public void configure(WebSecurity web) throws Exception {
+    public void configure(final WebSecurity web) throws Exception {
         web.ignoring().requestMatchers(PathRequest.toStaticResources().atCommonLocations());
     }
 
     @Override
-    protected void configure(HttpSecurity http) throws Exception {
+    protected void configure(final HttpSecurity http) throws Exception {
         http
-            .addFilter(digestAuthenticationFilter())
-            .exceptionHandling().authenticationEntryPoint(authenticationEntryPoint())
-            .and()
+            // .addFilter(digestAuthenticationFilter())
+            // .exceptionHandling().authenticationEntryPoint(authenticationEntryPoint())
+            // .and()
             .csrf().disable()
             .authorizeRequests()
                 .mvcMatchers("/", "/info", "/account/**", "/signup").permitAll()
@@ -75,8 +80,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
         http.formLogin(form -> form.loginPage("/signin").permitAll());
 
-        // http.formLogin().loginPage("/signin").loginProcessingUrl("/login").usernameParameter("name")
-        //         .passwordParameter("pw").successHandler(loginSuccessHandler).permitAll();
+        http.formLogin().loginPage("/signin").loginProcessingUrl("/login").usernameParameter("name")
+                .passwordParameter("pw").successHandler(loginSuccessHandler).permitAll();
 
         // .successHandler(new AuthenticationSuccessHandler() {
         // @Autowired
@@ -95,16 +100,16 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         // http.httpBasic();
         http.logout().logoutUrl("/logout").logoutSuccessUrl("/");
 
-        http.rememberMe().userDetailsService(accountService);
+        // http.rememberMe().userDetailsService(accountService);
 
         http.exceptionHandling()
                 // .accessDeniedPage("/access-denied")
                 .accessDeniedHandler(new AccessDeniedHandler() {
                     @Override
-                    public void handle(HttpServletRequest request, HttpServletResponse response,
-                            AccessDeniedException accessDeniedException) throws IOException, ServletException {
-                        Object principal1 = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-                        UserDetails principal = (UserDetails) principal1;
+                    public void handle(final HttpServletRequest request, final HttpServletResponse response,
+                            final AccessDeniedException accessDeniedException) throws IOException, ServletException {
+                        final Object principal1 = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+                        final UserDetails principal = (UserDetails) principal1;
                         System.out.println("principal = " + principal);
                         response.sendRedirect("/access-denied");
                     }
@@ -114,15 +119,15 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     DigestAuthenticationFilter digestAuthenticationFilter() {
-        DigestAuthenticationFilter filter = new DigestAuthenticationFilter();
-        filter.setUserDetailsService(accountService);
+        final DigestAuthenticationFilter filter = new DigestAuthenticationFilter();
+        // filter.setUserDetailsService(accountService);
         filter.setAuthenticationEntryPoint(authenticationEntryPoint());
 
         return filter;
     }
 
     private DigestAuthenticationEntryPoint authenticationEntryPoint() {
-        DigestAuthenticationEntryPoint entryPoint = new DigestAuthenticationEntryPoint();
+        final DigestAuthenticationEntryPoint entryPoint = new DigestAuthenticationEntryPoint();
         entryPoint.setRealmName("realmName");
         entryPoint.setKey("3028472b-da34-4501-bfd8-a355c42bdf92");
 
@@ -130,12 +135,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     //
-    // @Override
-    // protected void configure(AuthenticationManagerBuilder auth) throws Exception
-    // {
-    // auth.inMemoryAuthentication()
-    // .withUser("gramman75").password("{noop}123").roles("USER").and()
-    // .withUser("admin").password("{noop}!@#").roles("ADMIN");
-    // }
+    @Override
+    protected void configure(final AuthenticationManagerBuilder auth) throws Exception
+    {
+        auth.userDetailsService(users);
+    }
+
   
 }
