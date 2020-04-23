@@ -13,6 +13,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.crypto.password.StandardPasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 
+import me.gramman75.common.CommonPasswordEncoder;
 import me.gramman75.form.SampleController;
 
 import java.net.StandardProtocolFamily;
@@ -24,8 +25,11 @@ public class SpringSecurityApplication {
 	@Bean
 	public PasswordEncoder passwordEncoder(){
 //		PasswordEncoder delegatingPasswordEncoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
-		PasswordEncoder delegatingPasswordEncoder = new StandardPasswordEncoder();
-		return delegatingPasswordEncoder;
+		// PasswordEncoder delegatingPasswordEncoder = new StandardPasswordEncoder();
+		// return delegatingPasswordEncoder;
+		PasswordEncoder encoder = new CommonPasswordEncoder();
+
+		return encoder;
 	}
 
 	public static void main(String[] args) {

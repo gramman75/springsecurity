@@ -113,10 +113,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
         SecurityContextHolder.setStrategyName(SecurityContextHolder.MODE_INHERITABLETHREADLOCAL);
 
-        http.sessionManagement()
-            .invalidSessionUrl("/invalidSession")
-            .maximumSessions(1)
-            .maxSessionsPreventsLogin(true);
+        // http.sessionManagement()
+        //     .invalidSessionUrl("/invalidSession")
+        //     .maximumSessions(1);
+            // .maxSessionsPreventsLogin(true);
 
     }
 
