@@ -13,7 +13,7 @@ spring:
 server:
   servlet:
     session:
-      timeout: 1
+      timeout: 10 
 
   jpa:
     hibernate:

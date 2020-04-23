@@ -32,11 +32,12 @@ public class LoginSuccessHandler  extends SavedRequestAwareAuthenticationSuccess
 
         SavedRequest request = requestCache.getRequest(httpServletRequest, httpServletResponse);
         DefaultSavedRequest savedRequest = (DefaultSavedRequest) request;
+        String redirectUrl = savedRequest == null ? "/signin" : savedRequest.getServletPath();
 
         String name = authentication.getName();
         Account byUsername = accountRepository.findByUsername(name);
         System.out.println("byUsername = " + byUsername);
-        httpServletResponse.sendRedirect(savedRequest.getServletPath());
+        httpServletResponse.sendRedirect(redirectUrl);
 
 
     }

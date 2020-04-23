@@ -3,6 +3,7 @@ package me.gramman75.config;
 import me.gramman75.account.Account;
 import me.gramman75.account.AccountRepository;
 import me.gramman75.account.AccountService;
+import me.gramman75.account.InvalidSessionHandler;
 import me.gramman75.account.LoginSuccessHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
@@ -19,6 +20,7 @@ import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.annotation.web.configurers.RememberMeConfigurer;
+import org.springframework.security.config.annotation.web.configurers.SessionManagementConfigurer.ConcurrencyControlConfigurer;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -112,8 +114,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         SecurityContextHolder.setStrategyName(SecurityContextHolder.MODE_INHERITABLETHREADLOCAL);
 
         http.sessionManagement()
-            .invalidSessionUrl("/invalidSession");
-            
+            .invalidSessionUrl("/invalidSession")
+            .maximumSessions(1)
+            .maxSessionsPreventsLogin(true);
+
     }
 
     DigestAuthenticationFilter digestAuthenticationFilter() {
