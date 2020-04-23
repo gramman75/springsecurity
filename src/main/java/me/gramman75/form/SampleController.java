@@ -139,6 +139,11 @@ public class SampleController {
         return "security";
     }
 
+    @GetMapping("/invalidSession")
+    public String invalidSession(){
+        return "invalidSession";
+    }
+
 
 
 }

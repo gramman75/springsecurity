@@ -46,8 +46,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     AccountService accountService;
 
-    @Autowired
-    UserDetailsService users;
+    // @Autowired
+    // UserDetailsService users;
 
     public SecurityExpressionHandler expressionHandler() {
         final RoleHierarchyImpl roleHierarchy = new RoleHierarchyImpl();
@@ -71,36 +71,30 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             // .and()
             .csrf().disable()
             .authorizeRequests()
-                .mvcMatchers("/", "/info", "/account/**", "/signup").permitAll()
+                .mvcMatchers("/", "/info", "/account/**", "/signup", "/invalidSession").permitAll()
                 .mvcMatchers("/admin").hasRole("ADMIN")
                 .mvcMatchers("/user").hasRole("USER")
                 .mvcMatchers("/security").fullyAuthenticated()
                 .anyRequest().authenticated()
                 .expressionHandler(expressionHandler());
 
-        http.formLogin(form -> form.loginPage("/signin").permitAll());
 
-        http.formLogin().loginPage("/signin").loginProcessingUrl("/login").usernameParameter("name")
-                .passwordParameter("pw").successHandler(loginSuccessHandler).permitAll();
+        http.formLogin()
+            .loginPage("/signin").permitAll()
+            .loginProcessingUrl("/login")
+                .usernameParameter("name")
+                .passwordParameter("pw")
+            .successHandler(loginSuccessHandler).permitAll();
 
-        // .successHandler(new AuthenticationSuccessHandler() {
-        // @Autowired
-        // AccountRepository accountRepository;
-        //
-        // @Override
-        // public void onAuthenticationSuccess(HttpServletRequest httpServletRequest,
-        // HttpServletResponse httpServletResponse, Authentication authentication)
-        // throws IOException, ServletException {
-        // String name = authentication.getName();
-        // Account byUsername = accountRepository.findByUsername(name);
-        // System.out.println("account = " + byUsername);
-        // }
-        // });
-        // .defaultSuccessUrl("/");
-        // http.httpBasic();
-        http.logout().logoutUrl("/logout").logoutSuccessUrl("/");
+        http.httpBasic();
 
-        // http.rememberMe().userDetailsService(accountService);
+        http.logout()
+            .logoutUrl("/logout")
+            .logoutSuccessUrl("/")
+            .deleteCookies("JSESSIONID");
+
+        http.rememberMe()
+            .userDetailsService(accountService);
 
         http.exceptionHandling()
                 // .accessDeniedPage("/access-denied")
@@ -116,11 +110,15 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 });
 
         SecurityContextHolder.setStrategyName(SecurityContextHolder.MODE_INHERITABLETHREADLOCAL);
+
+        http.sessionManagement()
+            .invalidSessionUrl("/invalidSession");
+            
     }
 
     DigestAuthenticationFilter digestAuthenticationFilter() {
         final DigestAuthenticationFilter filter = new DigestAuthenticationFilter();
-        // filter.setUserDetailsService(accountService);
+        filter.setUserDetailsService(accountService);
         filter.setAuthenticationEntryPoint(authenticationEntryPoint());
 
         return filter;
@@ -135,11 +133,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     //
-    @Override
-    protected void configure(final AuthenticationManagerBuilder auth) throws Exception
-    {
-        auth.userDetailsService(users);
-    }
+    // @Override
+    // protected void configure(final AuthenticationManagerBuilder auth) throws Exception
+    // {
+    //     auth.userDetailsService(users);
+    // }
 
   
 }

@@ -32,26 +32,26 @@ public class SpringSecurityApplication {
 		SpringApplication.run(SpringSecurityApplication.class, args);
 	}
 
-	@Bean
-    UserDetailsService users() {
+	// @Bean
+    // UserDetailsService users() {
 
-		UserBuilder users = User.builder();
+	// 	UserBuilder users = User.builder();
 
-		UserDetails user = users
-			.username("gramman75")
-            .password(passwordEncoder().encode("123"))
-            .roles("USER")
-            .build();
+	// 	UserDetails user = users
+	// 		.username("gramman75")
+    //         .password(passwordEncoder().encode("123"))
+    //         .roles("USER")
+    //         .build();
         
-            UserDetails admin = users
-            .username("admin")
-            .password(passwordEncoder().encode("123"))
-            .roles("ADMIN")
-            .build();
+    //         UserDetails admin = users
+    //         .username("admin")
+    //         .password(passwordEncoder().encode("123"))
+    //         .roles("ADMIN")
+    //         .build();
 
-        return new InMemoryUserDetailsManager(user, admin);
+    //     return new InMemoryUserDetailsManager(user, admin);
         
-    }
+    // }
 
 	
     

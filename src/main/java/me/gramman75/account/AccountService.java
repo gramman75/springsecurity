@@ -17,14 +17,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class AccountService  {
+public class AccountService  implements UserDetailsService{
     @Autowired
     AccountRepository accountRepository;
 
     @Autowired
     PasswordEncoder passwordEncoder;
 
-    // @Override
+    @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         
         Account account = accountRepository.findByUsername(username);

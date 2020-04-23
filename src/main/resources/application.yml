@@ -4,7 +4,16 @@ spring:
       name: admin
       password: 123
       roles: ADMIN
+  devtools:
+    livereload:
+      enabled: false
+    restart:
+      enabled: false
 
+server:
+  servlet:
+    session:
+      timeout: 1
 
   jpa:
     hibernate:
