@@ -1,5 +1,6 @@
 package me.gramman75.common;
 
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 public class CommonPasswordEncoder implements PasswordEncoder{

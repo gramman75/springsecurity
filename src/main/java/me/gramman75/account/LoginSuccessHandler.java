@@ -18,7 +18,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 @Service
-public class LoginSuccessHandler  extends SavedRequestAwareAuthenticationSuccessHandler implements AuthenticationSuccessHandler  {
+public class LoginSuccessHandler  extends SavedRequestAwareAuthenticationSuccessHandler implements  AuthenticationSuccessHandler  {
 
     @Autowired
     AccountRepository accountRepository;

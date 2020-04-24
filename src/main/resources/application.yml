@@ -10,6 +10,8 @@ spring:
     restart:
       enabled: false
 
+debug: true
+
 server:
   servlet:
     session:
