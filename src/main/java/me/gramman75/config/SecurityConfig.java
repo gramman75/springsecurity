@@ -73,7 +73,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             // .and()
             .csrf().disable()
             .authorizeRequests()
-                .mvcMatchers("/", "/info", "/account/**", "/signup", "/invalidSession").permitAll()
+                .mvcMatchers("/", "/info", "/account/**", "/signup", "/invalidSession","/oauth","/redirect").permitAll()
                 .mvcMatchers("/admin").hasRole("ADMIN")
                 .mvcMatchers("/user").hasRole("USER")
                 .mvcMatchers("/security").fullyAuthenticated()

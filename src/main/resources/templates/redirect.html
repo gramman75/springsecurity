@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>info</title>
+</head>
+<body>
+    <form action="https://accounts.google.com/o/oauth2/token" method="POST" enctype="application/x-www-form-urlencoded">
+        Code : <input type="text" name="code" th:value="${param.code}" /><br>
+        Client id : <input type="text" name="client_id" value="234310243630-b8h8hshhor5qvsuviol64paoco5mq40i.apps.googleusercontent.com" /><br>
+        Client Secret : <input type="text" name="client_secret" value="rWIEYaXge4zPHmaeGaEDpr4h" /><br>
+        Redirect uri: <input type="text" name="redirect_uri" value="http://localhost:8080/redirect" /><br>
+        Grant Type: <input type="text" name="grant_type" value="authorization_code" /><br>
+        <input type="submit" value="Submit" />
+    
+    </form>
+</body>
+</html>

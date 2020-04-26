@@ -144,7 +144,16 @@ public class SampleController {
         return "invalidSession";
     }
 
+    @GetMapping("/oauth")
+    public String oauth() {
+        return "oauth";
+    }
 
+
+    @GetMapping("/redirect")
+    public String redirect() {
+        return "redirect";
+    }
 
 }
 
