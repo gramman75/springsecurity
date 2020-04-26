@@ -4,6 +4,7 @@ import me.gramman75.account.Account;
 import me.gramman75.account.AccountRepository;
 import me.gramman75.account.AccountService;
 import me.gramman75.account.InvalidSessionHandler;
+import me.gramman75.account.LoginFailureHandler;
 import me.gramman75.account.LoginSuccessHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
@@ -86,7 +87,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             .loginProcessingUrl("/login")
                 .usernameParameter("name")
                 .passwordParameter("pw")
-            .successHandler(loginSuccessHandler).permitAll();
+            .successHandler(loginSuccessHandler)
+            .failureHandler(new LoginFailureHandler());
 
         http.httpBasic();
 
@@ -96,6 +98,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             .deleteCookies("JSESSIONID");
 
         http.rememberMe()
+            .key("myKey")
+            .rememberMeCookieName("myCookieName")
+            .useSecureCookie(true)
+            .tokenValiditySeconds(1000)
             .userDetailsService(accountService);
 
         http.exceptionHandling()
@@ -113,10 +119,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
         SecurityContextHolder.setStrategyName(SecurityContextHolder.MODE_INHERITABLETHREADLOCAL);
 
-        // http.sessionManagement()
-        //     .invalidSessionUrl("/invalidSession")
-        //     .maximumSessions(1);
-            // .maxSessionsPreventsLogin(true);
+        http.sessionManagement()
+            // .invalidSessionUrl("/invalidSession")
+            .maximumSessions(1);
 
     }
 
