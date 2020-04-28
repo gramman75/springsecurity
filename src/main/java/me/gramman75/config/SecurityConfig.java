@@ -6,6 +6,9 @@ import me.gramman75.account.AccountService;
 import me.gramman75.account.InvalidSessionHandler;
 import me.gramman75.account.LoginFailureHandler;
 import me.gramman75.account.LoginSuccessHandler;
+import me.gramman75.common.CustomOAuth2UserService;
+import me.gramman75.common.CustomOidcUserService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration;
@@ -23,21 +26,33 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.annotation.web.configurers.RememberMeConfigurer;
 import org.springframework.security.config.annotation.web.configurers.SessionManagementConfigurer.ConcurrencyControlConfigurer;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
+import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
+import org.springframework.security.oauth2.core.oidc.user.OidcUserAuthority;
+import org.springframework.security.oauth2.core.user.OAuth2UserAuthority;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.access.expression.DefaultWebSecurityExpressionHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.www.DigestAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.www.DigestAuthenticationFilter;
 import org.springframework.util.PathMatcher;
+import org.springframework.security.core.GrantedAuthority;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import com.nimbusds.openid.connect.sdk.claims.UserInfo;
+
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 @EnableWebSecurity
 // @Order(Ordered.HIGHEST_PRECEDENCE)
@@ -88,9 +103,20 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .usernameParameter("name")
                 .passwordParameter("pw")
             .successHandler(loginSuccessHandler)
-            .failureHandler(new LoginFailureHandler());
+            .failureHandler(new LoginFailureHandler())
+            .and()
+            .oauth2Login(oauth-> 
+                oauth.userInfoEndpoint(userInfo -> 
+                    userInfo.userAuthoritiesMapper(this.userAuthoritiesMapper())
+                            .userService(new CustomOAuth2UserService())
+                            .oidcUserService(new CustomOidcUserService())
+                )
+            );
 
-        http.httpBasic();
+        // http.httpBasic();
+
+        // http.oauth2Login();
+        // .loginPage(loginPage);
 
         http.logout()
             .logoutUrl("/logout")
@@ -148,5 +174,28 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     //     auth.userDetailsService(users);
     // }
 
+
+    private GrantedAuthoritiesMapper userAuthoritiesMapper() {
+        return (authorities) -> {
+            Set<GrantedAuthority> mappedAuthorities = new HashSet<>();
+            
+            authorities.stream().forEach(authority ->{
+                if (OidcUserAuthority.class.isInstance(authority)) {
+                    OidcUserAuthority oidcUserAuthority = (OidcUserAuthority)authority;
+                    
+                    mappedAuthorities.add(new SimpleGrantedAuthority("ROLE_USER"));
+                } else if (OAuth2UserAuthority.class.isInstance(authority)) {
+                    OAuth2UserAuthority auth2UserAuthority = (OAuth2UserAuthority)authority;
+                    mappedAuthorities.add(new SimpleGrantedAuthority("ROLE_USER"));
+                    // mappedAuthorities.add(auth2UserAuthority);
+                }
+
+            });
+
+            return mappedAuthorities;
+        };
+
+        
+    }
   
 }
